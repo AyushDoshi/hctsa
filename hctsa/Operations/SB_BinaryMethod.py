@@ -1,24 +1,28 @@
-def SB_BinaryStats(y,binaryMethod = 'diff'):
+import math
 
-    yBin = BF_Binarize(y,binaryMethod)
+import numpy
+
+from hctsa.PeripheryFunctions import BF_Binarize
+
+
+def SB_BinaryStats(y, binaryMethod='diff'):
+    """
+    """
+    yBin = BF_Binarize(y, binaryMethod)
 
     N = len(yBin)
 
-    outDict = {}
-
-    outDict['pupstat2'] = np.sum((yBin[math.floor(N /2):] == 1))  / np.sum((yBin[:math.floor(N /2)] == 1))
+    outDict = {'pupstat2': numpy.sum((yBin[math.floor(N / 2):] == 1)) / numpy.sum((yBin[:math.floor(N / 2)] == 1))}
 
     stretch1 = []
     stretch0 = []
     count = 1
 
-
-
-    for i in range(1,N):
+    for i in range(1, N):
 
         if yBin[i] == yBin[i - 1]:
 
-            count = count + 1
+            count += 1
 
         else:
 
@@ -30,7 +34,7 @@ def SB_BinaryStats(y,binaryMethod = 'diff'):
 
                 stretch0.append(count)
             count = 1
-    if yBin[N-1] == 1:
+    if yBin[N - 1] == 1:
 
         stretch1.append(count)
 
@@ -38,10 +42,9 @@ def SB_BinaryStats(y,binaryMethod = 'diff'):
 
         stretch0.append(count)
 
-
     outDict['pstretch1'] = len(stretch1) / N
 
-    if stretch0 == []:
+    if not stretch0:
 
         outDict['longstretch0'] = 0
         outDict['meanstretch0'] = 0
@@ -49,11 +52,11 @@ def SB_BinaryStats(y,binaryMethod = 'diff'):
 
     else:
 
-        outDict['longstretch0'] = np.max(stretch0)
-        outDict['meanstretch0'] = np.mean(stretch0)
-        outDict['stdstretch0'] = np.std(stretch0,ddof = 1)
+        outDict['longstretch0'] = numpy.max(stretch0)
+        outDict['meanstretch0'] = numpy.mean(stretch0)
+        outDict['stdstretch0'] = numpy.std(stretch0, ddof=1)
 
-    if stretch1 == []:
+    if not stretch1:
 
         outDict['longstretch1'] = 0
         outDict['meanstretch1'] = 0
@@ -61,9 +64,9 @@ def SB_BinaryStats(y,binaryMethod = 'diff'):
 
     else:
 
-        outDict['longstretch1'] = np.max(stretch1)
-        outDict['meanstretch1'] = np.mean(stretch1)
-        outDict['stdstretch1'] = np.std(stretch1,ddof = 1)
+        outDict['longstretch1'] = numpy.max(stretch1)
+        outDict['meanstretch1'] = numpy.mean(stretch1)
+        outDict['stdstretch1'] = numpy.std(stretch1, ddof=1)
 
     try:
 
@@ -73,6 +76,5 @@ def SB_BinaryStats(y,binaryMethod = 'diff'):
     except:
 
         pass
-
 
     return outDict

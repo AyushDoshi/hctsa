@@ -1,10 +1,10 @@
 # author: Dominik Krzeminski (dokato)
 # https://github.com/dokato/dfa
-import numpy as np
-import matplotlib.pyplot as plt
-import scipy.signal as ss
+
 
 # detrended fluctuation analysis
+import numpy
+
 
 def calc_rms(x, scale):
     """
@@ -22,19 +22,20 @@ def calc_rms(x, scale):
         RMS data in each window with length len(x)//scale
     """
     # making an array with data divided in windows
-    shape = (x.shape[0]//scale, scale)
-    X = np.lib.stride_tricks.as_strided(x,shape=shape)
+    shape = (x.shape[0] // scale, scale)
+    X = numpy.lib.stride_tricks.as_strided(x, shape=shape)
     # vector of x-axis points to regression
-    scale_ax = np.arange(scale)
-    rms = np.zeros(X.shape[0])
+    scale_ax = numpy.arange(scale)
+    rms = numpy.zeros(X.shape[0])
     for e, xcut in enumerate(X):
-        coeff = np.polyfit(scale_ax, xcut, 1)
-        xfit = np.polyval(coeff, scale_ax)
+        coeff = numpy.polyfit(scale_ax, xcut, 1)
+        xfit = numpy.polyval(coeff, scale_ax)
         # detrending and computing RMS of each window
-        rms[e] = np.sqrt(np.mean((xcut-xfit)**2))
+        rms[e] = numpy.sqrt(numpy.mean((xcut - xfit) ** 2))
     return rms
 
-def dfa(x, scale_lim=[5,9], scale_dens=0.25, show=False):
+
+def dfa(x, scale_lim=None, scale_dens=0.25, show=False):
     """
     Detrended Fluctuation Analysis - measures power law scaling coefficient
     of the given signal *x*.
@@ -68,19 +69,21 @@ def dfa(x, scale_lim=[5,9], scale_dens=0.25, show=False):
         estimation of DFA exponent
     """
     # cumulative sum of data with substracted offset
-    y = np.cumsum(x - np.mean(x))
-    scales = (2**np.arange(scale_lim[0], scale_lim[1], scale_dens)).astype(np.int)
-    fluct = np.zeros(len(scales))
+    if scale_lim is None:
+        scale_lim = [5, 9]
+    y = numpy.cumsum(x - numpy.mean(x))
+    scales = (2 ** numpy.arange(scale_lim[0], scale_lim[1], scale_dens)).astype(numpy.int)
+    fluct = numpy.zeros(len(scales))
     # computing RMS for each window
     for e, sc in enumerate(scales):
-        if len(calc_rms(y, sc)**2) == 0:
+        if len(calc_rms(y, sc) ** 2) == 0:
             continue
-        fluct[e] = np.sqrt(np.mean(calc_rms(y, sc)**2))
+        fluct[e] = numpy.sqrt(numpy.mean(calc_rms(y, sc) ** 2))
 
     # fitting a line to rms data
-    coeff = np.polyfit(np.log2(scales), np.log2(fluct), 1)
+    coeff = numpy.polyfit(numpy.log2(scales), numpy.log2(fluct), 1)
     # if show:
-    #     fluctfit = 2**np.polyval(coeff,np.log2(scales))
+    #     fluctfit = 2**numpy.polyval(coeff,numpy.log2(scales))
     #     plt.loglog(scales, fluct, 'bo')
     #     plt.loglog(scales, fluctfit, 'r', label=r'$\alpha$ = %0.2f'%coeff[0])
     #     plt.title('DFA')
@@ -88,5 +91,5 @@ def dfa(x, scale_lim=[5,9], scale_dens=0.25, show=False):
     #     plt.ylabel(r'$\log_{10}$<F(t)>')
     #     plt.legend()
     #     plt.show()
-    #return scales, fluct, coeff[0]
+    # return scales, fluct, coeff[0]
     return coeff[0]

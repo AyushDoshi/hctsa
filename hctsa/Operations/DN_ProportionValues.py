@@ -1,4 +1,6 @@
-def DN_ProportionValues(x,propWhat = 'positive'):
+def DN_ProportionValues(x, propWhat='positive'):
+    """
+    """
     N = len(x)
     if propWhat == 'zeros':
         return sum(x == 0) / N

@@ -1,5 +1,5 @@
+import numpy
 
-import numpy as np
 
 def MD_pNN(x):
     """
@@ -19,21 +19,17 @@ def MD_pNN(x):
     """
 
     # Standard defaults --------------------------------
-    diffx = np.diff(x)
+    diffx = numpy.diff(x)
     N = len(x)
 
     # Calculate pNNx percentage ------------------------
 
-    Dx = np.abs(diffx) * 1000 # assume milliseconds as for RR intervals
-    pnns = np.array([5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    Dx = numpy.abs(diffx) * 1000  # assume milliseconds as for RR intervals
+    pnns = numpy.array([5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
 
-    out = {} # dict used for output in place of MATLAB struct
+    out = {}  # dict used for output in place of MATLAB struct
 
     for x in pnns:
-        out["pnn" + str(x) ] = sum(Dx > x) / (N-1)
+        out["pnn" + str(x)] = sum(Dx > x) / (N - 1)
 
     return out
-
-
-
-

@@ -1,8 +1,10 @@
-#@numba.jit(nopython=True,parallel=True)
-def DN_MinMax(y,which = 'max'):
-    # if not isinstance(y,np.ndarray):
-    #     y = np.asarray(y)
+# @numba.jit(nopython=True,parallel=True)
+def DN_MinMax(y, which='max'):
+    """
+    """
+    # if not isinstance(y,numpy.ndarray):
+    #     y = numpy.asarray(y)
     if which == 'min':
-        return(y.min())
+        return y.min()
     else:
-        return(y.max())
+        return y.max()

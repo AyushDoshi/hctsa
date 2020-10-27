@@ -1,28 +1,32 @@
-def MD_polvar(x,d = 1 ,D = 6):
+import numpy
 
-    dx = np.absolute(np.diff(x))
+
+def MD_polvar(x, d=1, D=6):
+    """
+    """
+    dx = numpy.absolute(numpy.diff(x))
 
     N = len(dx)
 
-    xsym = ( dx >= d )
-    zseq = np.zeros(D)
-    oseq = np.ones(D)
+    xsym = (dx >= d)
+    zseq = numpy.zeros(D)
+    oseq = numpy.ones(D)
 
     i = 1
     pc = 0
 
-    while i <= (N-D):
+    while i <= (N - D):
 
-        xseq = xsym[i:(i+D)]
+        xseq = xsym[i:(i + D)]
 
-        if np.sum((xseq == zseq)) == D or np.sum((xseq == oseq)) == D:
+        if numpy.sum((xseq == zseq)) == D or numpy.sum((xseq == oseq)) == D:
 
-            pc = pc + 1
-            i = i + D
+            pc += 1
+            i += D
 
         else:
 
-            i = i + 1
+            i += 1
 
     p = pc / N
 

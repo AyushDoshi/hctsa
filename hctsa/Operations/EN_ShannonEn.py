@@ -1,9 +1,14 @@
-#@numba.jit(nopython=True,parallel=True)
-def EN_ShannonEn(y):
-    p = np.zeros(len(np.unique(y)))
-    n = 0
-    for i in np.unique(y):
-        p[n] = len(y[y == i]) / len(y)
-        n = n + 1
+# @numba.jit(nopython=True,parallel=True)
+import numpy
 
-    return -np.sum(p*np.log2(p))
+
+def EN_ShannonEn(y):
+    """
+    """
+    p = numpy.zeros(len(numpy.unique(y)))
+    n = 0
+    for i in numpy.unique(y):
+        p[n] = len(y[y == i]) / len(y)
+        n += 1
+
+    return -numpy.sum(p * numpy.log2(p))

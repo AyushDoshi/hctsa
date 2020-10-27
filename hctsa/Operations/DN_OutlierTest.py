@@ -1,12 +1,16 @@
-def DN_OutlierTest(y,p = 2,justMe=''):
+import numpy
 
+
+def DN_OutlierTest(y, p=2, justMe=''):
+    """
+    """
     outDict = {}
 
-    index = np.logical_and(y > np.percentile(y,p),y < np.percentile(y,100-p))
+    index = numpy.logical_and(y > numpy.percentile(y, p), y < numpy.percentile(y, 100 - p))
 
-    outDict['mean'] = np.mean(y[index])
+    outDict['mean'] = numpy.mean(y[index])
 
-    outDict['std'] = np.std(y[index],ddof = 1) / np.std(y,ddof = 1)
+    outDict['std'] = numpy.std(y[index], ddof=1) / numpy.std(y, ddof=1)
 
     if justMe == 'mean':
 

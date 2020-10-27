@@ -1,6 +1,11 @@
-#@numba.jit(nopython=True,parallel=True)
+# @numba.jit(nopython=True,parallel=True)
+import numpy
+
+
 def DN_STD(y):
-    #y must be numpy array
-    # if not isinstance(y,np.ndarray):
-    #     y = np.asarray(y)
-    return(np.std(y))
+    """
+    """
+    # y must be numpy array
+    # if not isinstance(y,numpy.ndarray):
+    #     y = numpy.asarray(y)
+    return numpy.std(y)

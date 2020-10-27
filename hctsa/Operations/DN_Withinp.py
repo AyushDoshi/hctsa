@@ -1,13 +1,19 @@
-#@numba.jit(nopython=True,parallel=True)
-def DN_Withinp(x,p = 1,meanOrMedian = 'mean'):
+# @numba.jit(nopython=True,parallel=True)
+import numpy
+from scipy import stats
+
+
+def DN_Withinp(x, p=1, meanOrMedian='mean'):
+    """
+    """
     N = len(x)
 
     if meanOrMedian == 'mean':
-        mu = np.mean(x)
-        sig = np.std(x)
+        mu = numpy.mean(x)
+        sig = numpy.std(x)
     elif meanOrMedian == 'median':
-        mu = np.median(x)
-        sig = 1.35*stats.iqr(x)
+        mu = numpy.median(x)
+        sig = 1.35 * stats.iqr(x)
     else:
         raise Exception('Unknown meanOrMedian should be mean or median')
-    return np.sum((x >= mu-p*sig) & (x <= mu + p*sig)) / N
+    return numpy.sum((x >= mu - p * sig) & (x <= mu + p * sig)) / N

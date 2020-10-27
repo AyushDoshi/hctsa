@@ -1,4 +1,7 @@
-def CO_RM_AMInformation(y,tau = 1):
+from hctsa.PeripheryFunctions import RM_information
+
+
+def CO_RM_AMInformation(y, tau=1):
     """
     A wrapper for rm_information(), which calculates automutal information
 
@@ -15,12 +18,11 @@ def CO_RM_AMInformation(y,tau = 1):
     """
 
     if tau >= len(y):
-
-        return 
+        return
 
     y1 = y[:-tau]
     y2 = y[tau:]
 
-    out = RM_information(y1,y2)
+    out = RM_information(y1, y2)
 
     return out[0]

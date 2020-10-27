@@ -1,8 +1,8 @@
-
-import numpy as np
-import scipy
-from scipy import signal
 import math
+
+import numpy
+from scipy import signal
+
 
 def MD_hrv_classic(y):
     """
@@ -35,30 +35,25 @@ def MD_hrv_classic(y):
 
     """
 
-    #Standard Defaults
-    diffy = np.diff(y)
+    # Standard Defaults
+    diffy = numpy.diff(y)
     N = len(y)
 
     # Calculate pNNx percentage ---------------------------------------------------------------------------------
-    Dy = np.abs(diffy) * 1000
+    Dy = numpy.abs(diffy) * 1000
 
     # anonymous function to fo the PNNx calculation:
     # proportion of the difference magnitudes greater than X*sigma
-    PNNxfn = lambda x : np.sum(Dy > x)/(N-1)
+    PNNxfn = lambda x: numpy.sum(Dy > x) / (N - 1)
 
-    out = {} # declares a dictionary to contains the outputs, instead of MATLAB struct
+    out = {'pnn5': PNNxfn(5), 'pnn10': PNNxfn(10), 'pnn20': PNNxfn(20), 'pnn30': PNNxfn(30),
+           'pnn40': PNNxfn(40)}  # declares a dictionary to contains the outputs, instead of MATLAB struct
 
-    out['pnn5'] = PNNxfn(5) # 0.0055*sigma
-    out['pnn10'] = PNNxfn(10)
-    out['pnn20'] = PNNxfn(20)
-    out['pnn30'] = PNNxfn(30)
-    out['pnn40'] = PNNxfn(40)
+    # calculate PSD, DOES NOT MATCH UP WITH MATLAB -----------------------------------------------------------------
+    F, Pxx = signal.periodogram(y, window=numpy.hanning(
+        N))  # hanning confirmed to do the same thing as hann in matlab, periodogram() is what differs
 
-    #calculate PSD, DOES NOT MATCH UP WITH MATLAB -----------------------------------------------------------------
-    F, Pxx = signal.periodogram(y, window= np.hanning(N)) #hanning confirmed to do the same thing as hann in matlab, periodogram() is what differs
-    
     # calculate spectral measures such as subband spectral power percentage, LF/HF ratio etc.
-
 
     LF_lo = 0.04
     LF_hi = 0.15
@@ -67,73 +62,70 @@ def MD_hrv_classic(y):
 
     fbinsize = F[1] - F[0]
 
-    #calculating indl, indh, indv; needed for loop for python implementation
+    # calculating indl, indh, indv; needed for loop for python implementation
     indl = []
     for x in F:
-        if x >= LF_lo and x <= LF_hi:
+        if LF_lo <= x <= LF_hi:
             indl.append(1)
-        else :
+        else:
             indl.append(0)
-
 
     indh = []
     for x in F:
-        if x >= HF_lo and x <= HF_hi:
+        if HF_lo <= x <= HF_hi:
             indh.append(1)
         else:
             indh.append(0)
-    #print("indh: ", indh)
+    # print("indh: ", indh)
 
     indv = []
     for x in F:
         if x <= LF_lo:
             indv.append(1)
-        else :
+        else:
             indv.append(0)
-    #print("indv: ", indv)
+    # print("indv: ", indv)
 
-    #calculating lfp, hfp, and vlfp, needed for loop for python implementation
+    # calculating lfp, hfp, and vlfp, needed for loop for python implementation
     indlPxx = []
     for i in range(0, len(Pxx)):
         if indl[i] == 1:
             indlPxx.append(Pxx[i])
-    lfp = fbinsize * np.sum(indlPxx)
-    #print()
-    #print('lfp: ', lfp)
+    lfp = fbinsize * numpy.sum(indlPxx)
+    # print()
+    # print('lfp: ', lfp)
 
     indhPxx = []
     for i in range(0, len(Pxx)):
         if indh[i] == 1:
             indhPxx.append(Pxx[i])
-    hfp = fbinsize * np.sum(indhPxx)
-    #print('hfp: ', hfp)
+    hfp = fbinsize * numpy.sum(indhPxx)
+    # print('hfp: ', hfp)
 
     indvPxx = []
     for i in range(0, len(Pxx)):
         if indv[i] == 1:
             indvPxx.append(Pxx[i])
-    vlfp = fbinsize * np.sum(indvPxx)
-    #print('vlfp: ', vlfp)
+    vlfp = fbinsize * numpy.sum(indvPxx)
+    # print('vlfp: ', vlfp)
 
     out['lfhf'] = lfp / hfp
-    total = fbinsize * np.sum(Pxx)
-    out['vlf'] = vlfp/total * 100
-    out['lf'] = lfp/total * 100
-    out['hf'] = hfp/total * 100
-
+    total = fbinsize * numpy.sum(Pxx)
+    out['vlf'] = vlfp / total * 100
+    out['lf'] = lfp / total * 100
+    out['hf'] = hfp / total * 100
 
     # triangular histogram index: ----------------------------------------------------------------------
     numBins = 10
-    hist = np.histogram(y, bins=numBins)
-    out['tri'] = len(y)/np.max(hist[0])
-
+    hist = numpy.histogram(y, bins=numBins)
+    out['tri'] = len(y) / numpy.max(hist[0])
 
     # Poincare plot measures ---------------------------------------------------------------------------
-    rmssd = np.std(diffy, ddof=1) #set delta degrees of freedom to 1 to get same result as matlab
-    sigma = np.std(y, ddof=1)
+    rmssd = numpy.std(diffy, ddof=1)  # set delta degrees of freedom to 1 to get same result as matlab
+    sigma = numpy.std(y, ddof=1)
 
-    out["SD1"] = 1/math.sqrt(2) * rmssd * 1000
-    out["SD2"] = math.sqrt(2 * sigma**2 - (1/2) * rmssd**2) * 1000
+    out["SD1"] = 1 / math.sqrt(2) * rmssd * 1000
+    out["SD2"] = math.sqrt(2 * sigma ** 2 - (1 / 2) * rmssd ** 2) * 1000
 
     return out
     # Anonymous function to do the PNNx calculation

@@ -1,12 +1,19 @@
-def IN_AutoMutualInfo(y,timeDelay = 1,estMethod = 'gaussian',extraParam = []):
+import numpy
 
-    if isinstance(timeDelay,str):
+from hctsa.Operations import CO_FirstZero
 
-        timeDelay = CO_FirstZero(y,'ac')
+
+def IN_AutoMutualInfo(y, timeDelay=1, estMethod='gaussian', extraParam=None):
+    """
+    """
+    if extraParam is None:
+        extraParam = []
+    if isinstance(timeDelay, str):
+        timeDelay = CO_FirstZero(y)
 
     N = len(y)
 
-    if isinstance(timeDelay,list):
+    if isinstance(timeDelay, list):
 
         numTimeDelays = len(timeDelay)
 
@@ -22,15 +29,14 @@ def IN_AutoMutualInfo(y,timeDelay = 1,estMethod = 'gaussian',extraParam = []):
 
     for k in range(numTimeDelays):
 
-        y1 = y[0:N-timeDelay[k]]
+        y1 = y[0:N - timeDelay[k]]
         y2 = y[timeDelay[k]:N]
 
         if estMethod == 'gaussian':
+            r = numpy.corrcoef(y1, y2)[1, 0]
 
-            r = np.corrcoef(y1,y2)[1,0]
+            amis.append(-.5 * numpy.log(1 - r ** 2))
 
-            amis.append(-.5 * np.log(1 - r**2))
-
-            out['Auto Mutual ' + str(timeDelay[k])] = -.5 * np.log(1 - r**2)
+            out['Auto Mutual ' + str(timeDelay[k])] = -.5 * numpy.log(1 - r ** 2)
 
     return out

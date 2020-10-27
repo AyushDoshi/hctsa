@@ -1,4 +1,11 @@
-def MF_hmm_CompareNStates(y,trainp = .6,nstater = [2,3,4]):
+import math
+
+import numpy
+
+from hctsa.PeripheryFunctions import ZG_hmm, ZG_hmm_cl
+
+
+def MF_hmm_CompareNStates(y, trainp=.6, nstater=None):
     """
         % MF_hmm_CompareNStates     Hidden Markov Model (HMM) fitting to a time series.
         %
@@ -29,6 +36,8 @@ def MF_hmm_CompareNStates(y,trainp = .6,nstater = [2,3,4]):
 
     """
 
+    if nstater is None:
+        nstater = [2, 3, 4]
     N = len(y)
 
     Ntrain = math.floor(N * trainp)
@@ -36,36 +45,28 @@ def MF_hmm_CompareNStates(y,trainp = .6,nstater = [2,3,4]):
     ytrain = y[:Ntrain]
 
     if Ntrain < N:
-
         ytest = y[Ntrain:]
         Ntest = len(ytest)
 
     Nstate = len(nstater)
-    LLtrains = np.zeros(Nstate)
-    LLtests = np.zeros(Nstate)
+    LLtrains = numpy.zeros(Nstate)
+    LLtests = numpy.zeros(Nstate)
 
     for j in range(Nstate):
-
         numStates = nstater[j]
 
-        Mu, Cov, P, Pi, LL = ZG_hmm(ytrain,Ntrain,numStates,30)
+        Mu, Cov, P, Pi, LL = ZG_hmm(ytrain, Ntrain, numStates, 30)
 
         LLtrains[j] = LL[-1] / Ntrain
 
-        lik,likv = ZG_hmm_cl(ytest,Ntest,numStates,Mu,Cov,P,Pi)
+        lik, likv = ZG_hmm_cl(ytest, Ntest, numStates, Mu, Cov, P, Pi)
 
         LLtests[j] = lik / Ntest
 
-    outDict = {}
-
-    outDict['meanLLtrain'] = np.mean(LLtrains)
-    outDict['meanLLtest'] = np.mean(LLtests)
-    outDict['maxLtrain'] = np.max(LLtrains)
-    outDict['maxLLtest'] = np.max(LLtests)
-    outDict['meandiffLLtt'] = np.mean(np.absolute(LLtests - LLtrains))
+    outDict = {'meanLLtrain': numpy.mean(LLtrains), 'meanLLtest': numpy.mean(LLtests), 'maxLtrain': numpy.max(LLtrains),
+               'maxLLtest': numpy.max(LLtests), 'meandiffLLtt': numpy.mean(numpy.absolute(LLtests - LLtrains))}
 
     for i in range(Nstate - 1):
-
-        outDict['LLtestdiff' + str(i)] = LLtests[i+1] - LLtests[i]
+        outDict['LLtestdiff' + str(i)] = LLtests[i + 1] - LLtests[i]
 
     return outDict

@@ -1,4 +1,7 @@
-def EN_DistributionEntropy(y,histOrKS = 'hist',numBins = None,olremp = 0):
+import numpy
+
+
+def EN_DistributionEntropy(y, histOrKS='hist', numBins=None, olremp=0):
     """
      EN_DistributionEntropy    Distributional entropy.
 
@@ -36,8 +39,7 @@ def EN_DistributionEntropy(y,histOrKS = 'hist',numBins = None,olremp = 0):
     """
     if not olremp == 0:
 
-        index = np.logical_and(y >= np.quantile(y,olremp),y <= np.quantile(y,1-olremp))
-
+        index = numpy.logical_and(y >= numpy.quantile(y, olremp), y <= numpy.quantile(y, 1 - olremp))
 
         yHat = y[index]
 
@@ -47,47 +49,46 @@ def EN_DistributionEntropy(y,histOrKS = 'hist',numBins = None,olremp = 0):
 
         else:
 
-            return EN_DistributionEntropy(y,histOrKS,numBins) - \
-                    EN_DistributionEntropy(yHat,histOrKS,numBins)
+            return EN_DistributionEntropy(y, histOrKS, numBins) - \
+                   EN_DistributionEntropy(yHat, histOrKS, numBins)
 
     if histOrKS == 'hist':
 
         if numBins is None:
-
             numBins = 10
 
-        if isinstance(numBins,int):
+        if isinstance(numBins, int):
 
-            px, binEdges = np.histogram(y,numBins)
+            px, binEdges = numpy.histogram(y, numBins)
 
             px = px / sum(px)
 
         else:
 
-            px, binEdges = np.histogram(y,numBins)
+            px, binEdges = numpy.histogram(y, numBins)
 
             px = px / sum(px)
 
-        binWidths = np.diff(binEdges)
+        binWidths = numpy.diff(binEdges)
 
     if histOrKS == 'ks':
-        #ks doesnt work for now kde python vs matlab different
+        # ks doesnt work for now kde python vs matlab different
         return None
 
-        if numBins is None:
-
-            kde = stats.gaussian_kde(y)
-
-            print(kde(y))
-
-        else:
-
-            px, xr = stats.gaussian_kde(x,numBins)
+        # if numBins is None:
+        #
+        #     kde = stats.gaussian_kde(y)
+        #
+        #     print(kde(y))
+        #
+        # else:
+        #
+        #     px, xr = stats.gaussian_kde(x, numBins)
 
     px2 = px[px > 0]
 
     binWidths2 = binWidths[px > 0]
 
-    out = - np.sum( np.multiply(px2,np.log(np.divide(px2,binWidths2))) )
+    out = - numpy.sum(numpy.multiply(px2, numpy.log(numpy.divide(px2, binWidths2))))
 
     return out

@@ -1,33 +1,35 @@
-def BF_Binarize(y,binarizeHow = 'diff'):
+import numpy
 
+
+def BF_Binarize(y, binarizeHow='diff'):
+    """
+    """
     if binarizeHow == 'diff':
-
-        yBin = stepBinary(np.diff(y))
+        yBin = stepBinary(numpy.diff(y))
 
     if binarizeHow == 'mean':
-
-        yBin = stepBinary(y - np.mean(y))
+        yBin = stepBinary(y - numpy.mean(y))
 
     if binarizeHow == 'median':
-
-        yBin = stepBinary(y - np.median(y))
+        yBin = stepBinary(y - numpy.median(y))
 
     if binarizeHow == 'iqr':
+        iqr = numpy.quantile(y, [.25, .75])
 
-        iqr = np.quantile(y,[.25,.75])
+        iniqr = numpy.logical_and(y > iqr[0], y < iqr[1])
 
-        iniqr = np.logical_and(y > iqr[0], y<iqr[1])
-
-        yBin = np.zeros(len(y))
+        yBin = numpy.zeros(len(y))
 
         yBin[iniqr] = 1
 
     return yBin
 
+
 def stepBinary(X):
+    """
+    """
+    Y = numpy.zeros(len(X))
 
-    Y = np.zeros(len(X))
-
-    Y[ X > 0 ] = 1
+    Y[X > 0] = 1
 
     return Y

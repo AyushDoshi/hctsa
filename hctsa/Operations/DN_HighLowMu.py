@@ -1,6 +1,11 @@
-#@numba.jit(nopython=True,parallel=True)
+# @numba.jit(nopython=True,parallel=True)
+import numpy
+
+
 def DN_HighLowMu(y):
-    mu = np.mean(y)
-    mhi = np.mean(y[y>mu])
-    mlo = np.mean(y[y<mu])
+    """
+    """
+    mu = numpy.mean(y)
+    mhi = numpy.mean(y[y > mu])
+    mlo = numpy.mean(y[y < mu])
     return (mhi - mu) / (mu - mlo)

@@ -1,9 +1,8 @@
-import numpy as np
-
-
-#@numba.jit(nopython=True,parallel=True)
+# @numba.jit(nopython=True,parallel=True)
 def DN_Mean(y):
-    #y must be numpy array
-    # if not isinstance(y,np.ndarray):
-    #     y = np.asarray(y)
-    return(y.mean())
+    """
+    """
+    # y must be numpy array
+    # if not isinstance(y,numpy.ndarray):
+    #     y = numpy.asarray(y)
+    return y.mean()

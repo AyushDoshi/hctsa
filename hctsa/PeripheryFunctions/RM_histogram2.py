@@ -1,9 +1,8 @@
-
-import numpy as np
 import math
+import numpy
 
 
-def RM_histogram2( *args ):
+def RM_histogram2(*args):
     """
     rm_histogram2() computes the two dimensional frequency histogram of two row vectors x and y
 
@@ -35,8 +34,8 @@ def RM_histogram2( *args ):
 
     # some initial tests on the input arguments
 
-    x = np.array(args[0])  # make sure the imputs are in numpy array form
-    y = np.array(args[1])
+    x = numpy.array(args[0])  # make sure the imputs are in numpy array form
+    y = numpy.array(args[1])
 
     xshape = x.shape
     yshape = y.shape
@@ -61,16 +60,16 @@ def RM_histogram2( *args ):
         return
 
     if nargin == 2:
-        minx = np.amin(x)
-        maxx = np.amax(x)
+        minx = numpy.amin(x)
+        maxx = numpy.amax(x)
         deltax = (maxx - minx) / (lenx - 1)
         ncellx = math.ceil(lenx ** (1 / 3))
 
-        miny = np.amin(y)
-        maxy = np.amax(y)
+        miny = numpy.amin(y)
+        maxy = numpy.amax(y)
         deltay = (maxy - miny) / (leny - 1)
         ncelly = ncellx
-        descriptor = np.array(
+        descriptor = numpy.array(
             [[minx - deltax / 2, maxx + deltax / 2, ncellx], [miny - deltay / 2, maxy + deltay / 2, ncelly]])
     else:
         descriptor = args[2]
@@ -96,13 +95,14 @@ def RM_histogram2( *args ):
     if uppery <= lowery:
         print("Error: invalid bounds in Y dimension")
 
-    result = np.zeros([int(ncellx), int(ncelly)],
-                      dtype=int)  # should do the same thing as matlab: result(1:ncellx,1:ncelly) = 0;
+    result = numpy.zeros([int(ncellx), int(ncelly)],
+                         dtype=int)  # should do the same thing as matlab: result(1:ncellx,1:ncelly) = 0;
 
-    xx = np.around((x - lowerx) / (upperx - lowerx) * ncellx + 1 / 2)
-    yy = np.around((y - lowery) / (uppery - lowery) * ncelly + 1 / 2)
+    xx = numpy.around((x - lowerx) / (upperx - lowerx) * ncellx + 1 / 2)
+    yy = numpy.around((y - lowery) / (uppery - lowery) * ncelly + 1 / 2)
 
-    xx = xx.astype(int)  # cast all the values in xx and yy to ints for use in indexing, already rounded in previous step
+    xx = xx.astype(
+        int)  # cast all the values in xx and yy to ints for use in indexing, already rounded in previous step
     yy = yy.astype(int)
 
     for n in range(0, lenx):
@@ -112,7 +112,7 @@ def RM_histogram2( *args ):
         indexx -= 1  # adjust indices to start at zero, not one like in MATLAB
         indexy -= 1
 
-        if indexx >= 0 and indexx <= ncellx - 1 and indexy >= 0 and indexy <= ncelly - 1:
-            result[indexx, indexy] = result[indexx, indexy] + 1
+        if 0 <= indexx <= ncellx - 1 and 0 <= indexy <= ncelly - 1:
+            result[indexx, indexy] += 1
 
     return result, descriptor

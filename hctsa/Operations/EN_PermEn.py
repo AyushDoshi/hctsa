@@ -1,37 +1,41 @@
 import itertools
-#import numba
 
-#@numba.jit(nopython=True,parallel=True)
-def EN_PermEn(y,m = 2,tau = 1):
+# import numba
 
+# @numba.jit(nopython=True,parallel=True)
+import math
+
+import numpy
+
+from hctsa.PeripheryFunctions import BF_embed
+
+
+def EN_PermEn(y, m=2, tau=1):
+    """
+    """
     try:
 
-        x = BF_embed(y,tau,m)
+        x = BF_embed(y, tau, m)
 
     except:
 
-        return np.nan
-
-
+        return numpy.nan
 
     Nx = x.shape[0]
 
     permList = perms(m)
     numPerms = len(permList)
 
-
-    countPerms = np.zeros(numPerms)
+    countPerms = numpy.zeros(numPerms)
 
     for j in range(Nx):
 
-        ix = np.argsort(x[j,:])
+        ix = numpy.argsort(x[j, :])
 
         for k in range(numPerms):
 
-
-            if (permList[k,:] - ix == np.zeros(m)).all() :
-
-                countPerms[k] = countPerms[k] + 1
+            if (permList[k, :] - ix == numpy.zeros(m)).all():
+                countPerms[k] += 1
 
                 break
 
@@ -39,28 +43,29 @@ def EN_PermEn(y,m = 2,tau = 1):
 
     p_0 = p[p > 0]
 
-    permEn = -sum(np.multiply(p_0,np.log2(p_0)))
+    permEn = -sum(numpy.multiply(p_0, numpy.log2(p_0)))
 
     mFact = math.factorial(m)
 
-    normPermEn = permEn / np.log2(mFact)
+    normPermEn = permEn / numpy.log2(mFact)
 
-    p_LE = np.maximum(np.repeat(1 / Nx,p.shape),p)
+    p_LE = numpy.maximum(numpy.repeat(1 / Nx, p.shape), p)
 
-    permENLE = - np.sum(np.multiply(p_LE,np.log(p_LE))) / (m - 1)
+    permENLE = - numpy.sum(numpy.multiply(p_LE, numpy.log(p_LE))) / (m - 1)
 
-    out = {'permEn':permEn,'normPermEn':normPermEn,'permEnLE':permENLE}
+    out = {'permEn': permEn, 'normPermEn': normPermEn, 'permEnLE': permENLE}
 
     return out
 
+
 def perms(n):
+    """
+    """
+    permut = itertools.permutations(numpy.arange(n))
 
-    permut = itertools.permutations(np.arange(n))
-
-    permut_array = np.empty((0,n))
+    permut_array = numpy.empty((0, n))
 
     for p in permut:
+        permut_array = numpy.append(permut_array, numpy.atleast_2d(p), axis=0)
 
-        permut_array = np.append(permut_array,np.atleast_2d(p),axis=0)
-
-    return(permut_array)
+    return permut_array

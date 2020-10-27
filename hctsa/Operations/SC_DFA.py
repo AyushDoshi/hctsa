@@ -1,50 +1,48 @@
-def SC_DFA(y):
+import numpy
 
+
+def SC_DFA(y):
+    """
+    """
     N = len(y)
 
-    tau = int(np.floor(N/2))
+    tau = int(numpy.floor(N / 2))
 
-    y = y - np.mean(y)
+    y -= numpy.mean(y)
 
-    x = np.cumsum(y)
+    x = numpy.cumsum(y)
 
-    taus = np.arange(5,tau+1)
+    taus = numpy.arange(5, tau + 1)
 
     ntau = len(taus)
 
-    F = np.zeros(ntau)
+    F = numpy.zeros(ntau)
 
     for i in range(ntau):
 
         t = int(taus[i])
 
-
-
         x_buff = x[:N - N % t]
 
-        x_buff = x_buff.reshape((int(N / t),t))
+        x_buff = x_buff.reshape((int(N / t), t))
 
-
-        y_buff = np.zeros((int(N / t),t))
+        y_buff = numpy.zeros((int(N / t), t))
 
         for j in range(int(N / t)):
+            tt = range(0, int(t))
 
-            tt = range(0,int(t))
+            p = numpy.polyfit(tt, x_buff[j, :], 1)
 
-            p = np.polyfit(tt,x_buff[j,:],1)
+            y_buff[j, :] = numpy.power(x_buff[j, :] - numpy.polyval(p, tt), 2)
 
-            y_buff[j,:] =  np.power(x_buff[j,:] - np.polyval(p,tt),2)
+        y_buff.reshape((N - N % t, 1))
 
+        F[i] = numpy.sqrt(numpy.mean(y_buff))
 
+    logtaur = numpy.log(taus)
 
-        y_buff.reshape((N - N % t,1))
+    logF = numpy.log(F)
 
-        F[i] = np.sqrt(np.mean(y_buff))
-
-    logtaur = np.log(taus)
-
-    logF = np.log(F)
-
-    p = np.polyfit(logtaur,logF,1)
+    p = numpy.polyfit(logtaur, logF, 1)
 
     return p[0]

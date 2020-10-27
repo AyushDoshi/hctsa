@@ -1,11 +1,11 @@
-
-import numpy as np
+import numpy
 from scipy import stats
-import statsmodels.sandbox.stats.runs as runs
 
 # 18/21 output statistics fully implemented from MATLAB, the other three are either from complex helper functions or MATLAB functions that don't transfer well
+from hctsa.Operations import CO_AutoCorr, CO_FirstZero
 
-def PH_Walker(y, walkerRule='prop', walkerParams=np.array([])):
+
+def PH_Walker(y, walkerRule='prop', walkerParams=numpy.array([])):
     """
 
     PH_Walker simulates a hypothetical walker moving through the time domain
@@ -47,45 +47,44 @@ def PH_Walker(y, walkerRule='prop', walkerParams=np.array([])):
 
     # ----------------------------------------------------------------------------------------------------------------------------------
     # PRELIMINARIES
-    #----------------------------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------------------------
 
     N = len(y)
 
-    #----------------------------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------------------------
     # CHECK INPUTS
-    #----------------------------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------------------------
     if walkerRule == 'runningvar':
         walkerParams = [1.5, 50]
-    if (len(walkerParams) == 0):
+    if len(walkerParams) == 0:
 
         if walkerRule == 'prop':
-            walkerParams = np.array([0.5])
+            walkerParams = numpy.array([0.5])
         if walkerRule == 'biasprop':
-            walkerParams = np.array([0.1, 0.2])
+            walkerParams = numpy.array([0.1, 0.2])
         if walkerRule == 'momentum':
-            walkerParams = np.array([2])
+            walkerParams = numpy.array([2])
         if walkerRule == 'runningvar':
             walkerParams = [1.5, 50]
 
-    #----------------------------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------------------------
     # (1) WALK
-    #----------------------------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------------------------
 
-
-    w = np.zeros(N)
+    w = numpy.zeros(N)
 
     if walkerRule == 'prop':
 
         # walker starts at zero and narrows the gap between its position
         # and the time series value at that point by the proportion given
         # in walkerParams, to give the value at the subsequent time step
-        if isinstance(walkerParams,list):
+        if isinstance(walkerParams, list):
             walkerParams = walkerParams[0]
         p = walkerParams
         w[0] = 0
 
         for i in range(1, N):
-            w[i] = w[i-1] + p*(y[i-1]-w[i-1])
+            w[i] = w[i - 1] + p * (y[i - 1] - w[i - 1])
 
 
     elif walkerRule == 'biasprop':
@@ -97,28 +96,28 @@ def PH_Walker(y, walkerRule='prop', walkerParams=np.array([])):
 
         w[0] = 0
 
-        for i in range (1, N):
-            if y[i] > y[i-1]:
-                w[i] = w[i-1] + pup*(y[i-1]-w[i-1])
+        for i in range(1, N):
+            if y[i] > y[i - 1]:
+                w[i] = w[i - 1] + pup * (y[i - 1] - w[i - 1])
 
-            else :
-                w[i] = w[i-1] + pdown*(y[i-1]-w[i-1])
+            else:
+                w[i] = w[i - 1] + pdown * (y[i - 1] - w[i - 1])
 
     elif walkerRule == 'momentum':
         # walker moves as if it had inertia from the previous time step,
         # i.e., it 'wants' to move the same amount; the time series acts as
         # a force changing its motion
 
-        m = walkerParams[0] # inertial mass
+        m = walkerParams[0]  # inertial mass
 
         w[0] = y[0]
         w[1] = y[1]
 
         for i in range(2, N):
-            w_inert = w[i-1] + (w[i-1]-w[i-2])
-            w[i] = w_inert + (y[i] - w_inert)/m # dissipative term
-            #equation of motion (s-s_0 = ut + F/m*t^2)
-            #where the 'force' is F is the change in the original time series at the point
+            w_inert = w[i - 1] + (w[i - 1] - w[i - 2])
+            w[i] = w_inert + (y[i] - w_inert) / m  # dissipative term
+            # equation of motion (s-s_0 = ut + F/m*t^2)
+            # where the 'force' is F is the change in the original time series at the point
 
     elif walkerRule == 'runningvar':
 
@@ -129,67 +128,58 @@ def PH_Walker(y, walkerRule='prop', walkerParams=np.array([])):
         w[1] = y[1]
 
         for i in range(2, N):
-            w_inert = w[i-1] + (w[i-1]-w[i-2])
-            w_mom = w_inert + (y[i] - w_inert)/m #dissipative term from time series
+            w_inert = w[i - 1] + (w[i - 1] - w[i - 2])
+            w_mom = w_inert + (y[i] - w_inert) / m  # dissipative term from time series
 
             if i > wl:
-                w[i] = w_mom * (np.std(y[(i-wl):i]))/np.std(w[(i-wl):i])
+                w[i] = w_mom * (numpy.std(y[(i - wl):i])) / numpy.std(w[(i - wl):i])
 
             else:
                 w[i] = w_mom
 
 
-    else :
+    else:
 
         print("Error: Unknown method: " + walkerRule + " for simulating walker on the time series")
 
-
-    #----------------------------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------------------------
     # (2) STATISITICS ON THE WALK
-    #----------------------------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------------------------
 
-    out = {} # dictionary for storing variables
+    out = {'w_mean': numpy.mean(w), 'w_median': numpy.median(w), 'w_std': numpy.std(w), 'w_ac1': CO_AutoCorr(w,
+                                                                                                             method='timedomainstat'),
+           'w_ac2': CO_AutoCorr(w, 2, method='timedomainstat'), 'w_tau': CO_FirstZero(w), 'w_min': numpy.min(w),
+           'w_max': numpy.max(w), 'propzcross': sum(numpy.multiply(w[0:(len(w) - 2)], w[1:(len(w) - 1)]) < 0) / (
+                N - 1), 'sw_meanabsdiff': numpy.mean(numpy.abs(y - w)), 'sw_taudiff': CO_FirstZero(y) - CO_FirstZero(w),
+           'sw_stdrat': numpy.std(w) / numpy.std(y)}  # dictionary for storing variables
 
     # (i) The walk itself -------------------------------------------------------------------------------------------
 
-    out['w_mean'] = np.mean(w)
-    out['w_median'] = np.median(w)
-    out['w_std'] = np.std(w)
-    out['w_ac1'] = CO_AutoCorr(w, 1, method='timedomainstat') # this function call in MATLAB uses method='Fourier', but we don't have that case implemented yet in autoCorr, however this seems to output the same thing
-    out['w_ac2'] = CO_AutoCorr(w, 2, method='timedomainstat')
-    out['w_tau'] = CO_FirstZero(w, 'ac')
-    out['w_min'] = np.min(w)
-    out['w_max'] = np.max(w)
-    out['propzcross'] = sum( np.multiply( w[0:(len(w)-2)], w[1:(len(w)-1)] ) < 0) / (N-1) # np.multiply performs elementwise multiplication like matlab .*
     # differences between the walk at signal
 
     # (ii) Differences between the walk at signal -------------------------------------------------------------------
 
-    out['sw_meanabsdiff'] = np.mean(np.abs(y-w))
-    out['sw_taudiff'] = CO_FirstZero(y, 'ac') - CO_FirstZero(w, 'ac')
-    out['sw_stdrat'] = np.std(w)/np.std(y) # will be thse same as w_std for z-scored signal
-    out['sw_ac1rat'] = out['w_ac1']/CO_AutoCorr(y, 1)
-    out['sw_minrat'] = min(w)/min(y)
-    out['sw_maxrat'] = max(w)/max(y)
-    out['sw_propcross'] = sum(np.multiply( w[0:(len(w)-1)] - y[0:(len(y)-1)] , w[1:(len(w))]-y[1:(len(y))]) < 0 )/(N-1) #np.multiply performs elementwise multiplication like matlab .*
+    out['sw_ac1rat'] = out['w_ac1'] / CO_AutoCorr(y)
+    out['sw_minrat'] = min(w) / min(y)
+    out['sw_maxrat'] = max(w) / max(y)
+    out['sw_propcross'] = sum(
+        numpy.multiply(w[0:(len(w) - 1)] - y[0:(len(y) - 1)], w[1:(len(w))] - y[1:(len(y))]) < 0) / (
+                                  N - 1)  # numpy.multiply performs elementwise multiplication like matlab .*
 
     ansari = stats.ansari(w, y)
     out['sw_ansarib_pval'] = ansari[1]
 
-
-    # r = np.linspace( np.min(np.min(y), np.min(w)), np.max(np.max(y), np.max(w)), 200 )
+    # r = numpy.linspace( numpy.min(numpy.min(y), numpy.min(w)), numpy.max(numpy.max(y), numpy.max(w)), 200 )
     # dy = stats.gaussian_kde(y, r)
-
 
     # (iii) looking at residuals between time series and walker
 
-    res = w-y
+    res = w - y
 
     # CLOSEST FUNCTION TO MATLAB RUNSTEST, found in statsmodels.sandbox.stats.runs
     # runstest = runs.runstest_2samp(res, groups=2)
     # out['res_runstest'] = runstest
 
-    out['res_acl'] = CO_AutoCorr(res, lag=1)
-
+    out['res_acl'] = CO_AutoCorr(res)
 
     return out

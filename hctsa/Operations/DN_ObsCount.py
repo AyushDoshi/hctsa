@@ -1,2 +1,7 @@
+import numpy
+
+
 def DN_ObsCount(y):
-    return np.count_nonzero(~np.isnan(y))
+    """
+    """
+    return numpy.count_nonzero(~numpy.isnan(y))

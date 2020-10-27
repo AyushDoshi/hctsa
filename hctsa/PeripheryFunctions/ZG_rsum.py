@@ -1,8 +1,12 @@
-def ZG_rsum(X):
+import numpy
 
-    Z = np.zeros(X.shape[0])
+
+def ZG_rsum(X):
+    """
+    """
+    Z = numpy.zeros(X.shape[0])
 
     for i in range(X.shape[1]):
-        Z = Z + X[:,i]
+        Z = Z + X[:, i]
 
     return Z

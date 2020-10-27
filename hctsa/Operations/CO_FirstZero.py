@@ -1,13 +1,16 @@
-def CO_FirstZero(y,corrFun = 'ac'):
+from hctsa.Operations import CO_AutoCorr
 
-    acf = CO_AutoCorr(y,[],'Fourier')
+
+def CO_FirstZero(y, corrFun='ac'):
+    """
+    """
+    acf = CO_AutoCorr(y, [])
 
     N = len(y)
 
-    for i in range(1,N-1):
+    for i in range(1, N - 1):
 
         if acf[i] < 0:
-
             return i
 
     return N

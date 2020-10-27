@@ -1,56 +1,55 @@
-import numpy as np
 import warnings
-#import numba
 
-#@numba.jit(nopython=True,parallel=True)
-def EN_SampEn(x,m=2,r=.2,scale=True):
+# import numba
+
+# @numba.jit(nopython=True,parallel=True)
+import numpy
+
+
+def EN_SampEn(x, m=2, r=.2, scale=True):
+    """
+    """
     warnings.filterwarnings('ignore')
 
     if scale:
-
-        r = np.std(x,ddof = 1) * r
+        r = numpy.std(x, ddof=1) * r
 
     print(r)
 
-    templates = make_templates(x,m)
-    #print(templates)
+    templates = make_templates(x, m)
+    # print(templates)
     A = 0
     B = 0
 
     for i in range(templates.shape[0]):
+        template = templates[i, :]
 
-        template = templates[i,:]
+        A = A + numpy.sum(numpy.amax(numpy.absolute(templates - template), axis=1) < r) - 1
 
-        A = A + np.sum(np.amax(np.absolute(templates-template), axis=1) < r) -1
-
-        B = B + np.sum(np.amax(np.absolute(templates[:,0:m]-template[0:m]),axis=1) < r) - 1
+        B = B + numpy.sum(numpy.amax(numpy.absolute(templates[:, 0:m] - template[0:m]), axis=1) < r) - 1
 
     if B == 0:
+        return {'Sample Entropy': numpy.nan, "Quadratic Entropy": numpy.nan}
 
-        return {'Sample Entropy':np.nan,"Quadratic Entropy":np.nan}
+    return {'Sample Entropy': - numpy.log(A / B), "Quadratic Entropy": - numpy.log(A / B) + numpy.log(2 * r)}
 
 
-    return {'Sample Entropy':- np.log(A/B),"Quadratic Entropy": - np.log(A/B) + np.log(2*r)}
+# @numba.jit(nopython=True,parallel=True)
+def make_templates(x, m):
+    """
+    """
+    N = int(len(x) - m)
 
-#@numba.jit(nopython=True,parallel=True)
-def make_templates(x,m):
-
-    N = int(len(x) - (m))
-
-    templates = np.zeros((N,m+1))
+    templates = numpy.zeros((N, m + 1))
 
     for i in range(N):
-
-        templates[i,:] = x[i:i+m+1]
+        templates[i, :] = x[i:i + m + 1]
 
     return templates
 
-
-
-
 # def SampEn(U, m = 2, r = .2):
 #
-#     r = r * np.log(U)
+#     r = r * numpy.log(U)
 #
 #     def _maxdist(x_i, x_j):
 #
@@ -80,22 +79,22 @@ def make_templates(x,m):
 #
 #     N = len(U)
 #
-#     return -np.log(_phi(m+1) / _phi(m))
+#     return -numpy.log(_phi(m+1) / _phi(m))
 
 # def EN_SampEn(y,M = 2,r = 0,pre = ''):
 #     if r == 0:
-#         r = .1*np.std(y)
+#         r = .1*numpy.std(y)
 #     else:
-#         r = r*np.std(y)
+#         r = r*numpy.std(y)
 #     M = M + 1
 #     N = len(y)
 #     print('hi')
-#     lastrun = np.zeros(N)
-#     run = np.zeros(N)
-#     A = np.zeros(M)
-#     B = np.zeros(M)
-#     p = np.zeros(M)
-#     e = np.zeros(M)
+#     lastrun = numpy.zeros(N)
+#     run = numpy.zeros(N)
+#     A = numpy.zeros(M)
+#     B = numpy.zeros(M)
+#     p = numpy.zeros(M)
+#     e = numpy.zeros(M)
 #
 #     for i in range(1,N):
 #         y1 = y[i-1]
@@ -104,7 +103,7 @@ def make_templates(x,m):
 #
 #             j = i + jj - 1
 #
-#             if np.absolute(y[j] - y1) < r:
+#             if numpy.absolute(y[j] - y1) < r:
 #
 #                 run[jj] = lastrun[jj] + 1
 #                 M1 = min(M,run[jj])
@@ -119,16 +118,16 @@ def make_templates(x,m):
 #
 #     NN = N * (N - 1) / 2
 #     p[0] = A[0] / NN
-#     e[0] = - np.log(p[0])
+#     e[0] = - numpy.log(p[0])
 #     for m in range(1,int(M)):
 #         p[m] = A[m] / B[m-1]
-#         e[m] = -np.log(p[m])
+#         e[m] = -numpy.log(p[m])
 #     i = 0
-#     # out = {'sampen':np.zeros(len(e)),'quadSampEn':np.zeros(len(e))}
+#     # out = {'sampen':numpy.zeros(len(e)),'quadSampEn':numpy.zeros(len(e))}
 #     # for ent in e:
-#     #     quaden1 = ent + np.log(2*r)
+#     #     quaden1 = ent + numpy.log(2*r)
 #     #     out['sampen'][i] = ent
 #     #     out['quadSampEn'][i] = quaden1
 #     #     i = i + 1
-#     out = {'Sample Entropy':e[1],'Quadratic Entropy':e[1] + np.log(2*r)}
+#     out = {'Sample Entropy':e[1],'Quadratic Entropy':e[1] + numpy.log(2*r)}
 #     return out

@@ -1,5 +1,8 @@
-import numpy as np
 import math
+
+import numpy
+
+from hctsa.PeripheryFunctions import RM_histogram2
 
 
 def RM_information(*args):
@@ -52,8 +55,8 @@ def RM_information(*args):
 
     # some initial tests on the input arguments
 
-    x = np.array(args[0])  # make sure the imputs are in numpy array form
-    y = np.array(args[1])
+    x = numpy.array(args[0])  # make sure the imputs are in numpy array form
+    y = numpy.array(args[1])
 
     xshape = x.shape
     yshape = y.shape
@@ -89,7 +92,8 @@ def RM_information(*args):
         descriptor = hist[1]
 
     if nargin >= 3:
-        hist = RM_histogram2(x, y, args[2])  # call outside function from rm_histogram2.py, args[2] represents the given descriptor
+        hist = RM_histogram2(x, y, args[
+            2])  # call outside function from rm_histogram2.py, args[2] represents the given descriptor
         h = hist[0]
         descriptor = hist[1]
 
@@ -103,7 +107,8 @@ def RM_information(*args):
     else:
         base = args[4]
 
-    lowerboundx = descriptor[0, 0]  #not sure why most of these were included in the matlab script, most of them go unused
+    lowerboundx = descriptor[
+        0, 0]  # not sure why most of these were included in the matlab script, most of them go unused
     upperboundx = descriptor[0, 1]
     ncellx = descriptor[0, 2]
     lowerboundy = descriptor[1, 0]
@@ -116,8 +121,8 @@ def RM_information(*args):
 
     # determine row and column sums
 
-    hy = np.sum(h, 0)
-    hx = np.sum(h, 1)
+    hy = numpy.sum(h, 0)
+    hx = numpy.sum(h, 1)
 
     ncellx = ncellx.astype(int)
     ncelly = ncelly.astype(int)
@@ -137,7 +142,7 @@ def RM_information(*args):
 
     estimate = estimate / count
     sigma = math.sqrt((sigma / count - estimate ** 2) / (count - 1))
-    estimate = estimate + math.log(count)
+    estimate += math.log(count)
     nbias = (ncellx - 1) * (ncelly - 1) / (2 * count)
 
     # conversion to unbiased estimate
@@ -158,8 +163,8 @@ def RM_information(*args):
 
         # base transformations
 
-    estimate = estimate / math.log(base)
-    nbias = nbias / math.log(base)
-    sigma = sigma / math.log(base)
+    estimate /= math.log(base)
+    nbias /= math.log(base)
+    sigma /= math.log(base)
 
     return estimate, nbias, sigma, descriptor

@@ -1,27 +1,29 @@
 import arch
-from pprint import pprint
+import numpy
 
 from statsmodels.stats.diagnostic import het_arch
 
-def MF_GARCHFit(y,preproc = None,P = 1,Q = 1):
 
-    y = (y - np.mean(y)) / np.std(y)
+def MF_GARCHFit(y, preproc=None, P=1, Q=1):
+    """
+    """
+    y = (y - numpy.mean(y)) / numpy.std(y)
 
     N = len(y)
 
     outDict = {}
 
-    lm, lmpval,fval,fpval = het_arch(y)
+    lm, lmpval, fval, fpval = het_arch(y)
 
     outDict['lm'] = lm
     outDict['lmpval'] = lmpval
     outDict['fval'] = fval
     outDict['fpval'] = fpval
 
-    model= arch.arch_model(y, vol='Garch', p=P, o=0, q=Q, dist='Normal')
-    results=model.fit()
+    model = arch.arch_model(y, p=P, q=Q)
+    results = model.fit()
 
-    #print(results.summary())
+    # print(results.summary())
 
     params = results._params
     paraNames = results._names
@@ -30,9 +32,8 @@ def MF_GARCHFit(y,preproc = None,P = 1,Q = 1):
     outDict['success'] = results._optim_output['success']
 
     for i in range(len(params)):
-
         outDict[paraNames[i]] = params[i]
 
-    #pprint(vars(results))
+    # pprint(vars(results))
 
     return outDict

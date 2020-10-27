@@ -1,5 +1,9 @@
-def CO_NonlinearAutocorr(y,taus,doAbs ='empty'):
+import numpy
 
+
+def CO_NonlinearAutocorr(y, taus, doAbs='empty'):
+    """
+    """
     if doAbs == 'empty':
 
         if len(taus) % 2 == 1:
@@ -11,18 +15,17 @@ def CO_NonlinearAutocorr(y,taus,doAbs ='empty'):
             doAbs = 1
 
     N = len(y)
-    tmax = np.max(taus)
+    tmax = numpy.max(taus)
 
     nlac = y[tmax:N]
 
     for i in taus:
-
-        nlac = np.multiply(nlac,y[ tmax - i:N - i ])
+        nlac = numpy.multiply(nlac, y[tmax - i:N - i])
 
     if doAbs:
 
-        return np.mean(np.absolute(nlac))
+        return numpy.mean(numpy.absolute(nlac))
 
     else:
 
-        return np.mean(nlac)
+        return numpy.mean(nlac)

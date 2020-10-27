@@ -1,4 +1,11 @@
-def ZG_hmm(X, T = '', K = 2, cyc = 100, tol = .0001):
+import math
+
+import numpy
+
+from hctsa.PeripheryFunctions import ZG_rdiv, ZG_rsum, ZG_rprod
+
+
+def ZG_hmm(X, T='', K=2, cyc=100, tol=.0001):
     """
     Python Implementation currently slow used for loops same as orginal
     need to vectorize
@@ -49,141 +56,127 @@ def ZG_hmm(X, T = '', K = 2, cyc = 100, tol = .0001):
 
     """
 
-    #For my purpose X should always be Nx1
+    # For my purpose X should always be Nx1
 
     N = len(X)
     p = 1
     if T == '':
-
         T = N
 
-    if N%T != 0:
-
+    if N % T != 0:
         return None
 
-    N = N / T
+    N /= T
 
-    Cov = np.cov(X)
+    Cov = numpy.cov(X)
 
-    Mu = np.random.normal(0,1,K) * math.sqrt(Cov) + np.ones(K)*np.mean(X)
+    Mu = numpy.random.normal(0, 1, K) * math.sqrt(Cov) + numpy.ones(K) * numpy.mean(X)
 
-    Pi = np.random.normal(0,1,(1,K))
-    Pi = Pi / np.sum(Pi)
+    Pi = numpy.random.normal(0, 1, (1, K))
+    Pi /= numpy.sum(Pi)
 
-    P = np.random.uniform(0,1,(K,K))
-    P = ZG_rdiv(P,ZG_rsum(P))
+    P = numpy.random.uniform(0, 1, (K, K))
+    P = ZG_rdiv(P, ZG_rsum(P))
 
     LL = []
     lik = 0
 
-    alpha = np.zeros((T,K))
-    beta = np.zeros((T,K))
-    gamma = np.zeros((T,K))
+    alpha = numpy.zeros((T, K))
+    beta = numpy.zeros((T, K))
+    gamma = numpy.zeros((T, K))
 
-    B = np.zeros((T,K))
-    k1 = (2*math.pi)**(-p/2)
+    B = numpy.zeros((T, K))
+    k1 = (2 * math.pi) ** (-p / 2)
 
     for cycle in range(cyc):
 
         Gamma = []
-        Gammasum = np.zeros((1,K))
-        Scale = np.zeros((T,1))
-        Xi = np.zeros((T-1,K*K))
+        Gammasum = numpy.zeros((1, K))
+        Scale = numpy.zeros((T, 1))
+        Xi = numpy.zeros((T - 1, K * K))
 
         for n in range(int(N)):
 
-            #Assuming P = 1 makes Cov single value not matrix
+            # Assuming P = 1 makes Cov single value not matrix
             iCov = 1 / Cov
 
+            k2 = k1 / numpy.sqrt(Cov)
 
-
-            k2 = k1 / np.sqrt(Cov)
-
-            #get rid of for loops
+            # get rid of for loops
             for i in range(T):
 
                 for l in range(K):
+                    d = Mu[l] - X[(n - 1) * T + i]
 
-                    d = Mu[l] - X[(n-1)*T + i]
+                    B[i, l] = k2 * numpy.exp(-.5 * d * iCov * d)
 
-                    B[i,l] = k2*np.exp(-.5*d*iCov*d)
+            scale = numpy.zeros((T, 1))
+            alpha[0, :] = numpy.multiply(Pi, B[0, :])
+            scale[0] = numpy.sum(alpha[0, :])
+            alpha[0, :] = alpha[0, :] / scale[0]
 
-            scale = np.zeros((T,1))
-            alpha[0,:] = np.multiply(Pi,B[0,:])
-            scale[0] = np.sum(alpha[0,:])
-            alpha[0,:] = alpha[0,:] / scale[0]
+            for i in range(1, T):
+                alpha[i, :] = numpy.multiply(numpy.matmul(alpha[i - 1, :], P), B[i, :])
+                scale[i] = numpy.sum(alpha[i, :])
+                alpha[i, :] = alpha[i, :] / scale[i]
 
-            for i in range(1,T):
+            beta[T - 1, :] = numpy.ones((1, K)) / scale[T - 1]
 
-                alpha[i,:] = np.multiply( np.matmul(alpha[i-1,:] , P), B[i,:])
-                scale[i] = np.sum(alpha[i,:])
-                alpha[i,:] = alpha[i,:] / scale[i]
+            for i in range(T - 2, -1, -1):
+                beta[i, :] = numpy.matmul(numpy.multiply(beta[i + 1, :], B[i + 1, :]), P.T) / scale[i]
 
-            beta[T - 1,:] = np.ones((1,K)) / scale[T-1]
+            gamma = numpy.multiply(alpha, beta)
+            gamma = ZG_rdiv(gamma, ZG_rsum(gamma))
+            gammasum = numpy.sum(gamma, axis=0)
 
-            for i in range(T-2,-1,-1):
+            xi = numpy.zeros((T - 1, K * K))
 
-                beta[i,:] = np.matmul(np.multiply(beta[i+1,:],B[i+1,:]),P.T) / scale[i]
+            for i in range(T - 1):
+                t = numpy.multiply(P, numpy.matmul(alpha[i, :].T, numpy.multiply(beta[i + 1, :], B[i + 1, :])))
+                xi[i, :] = t.flatten('F') / numpy.sum(t)
 
-            gamma = np.multiply(alpha,beta)
-            gamma = ZG_rdiv(gamma,ZG_rsum(gamma))
-            gammasum = np.sum(gamma,axis = 0)
+            Scale = Scale + numpy.log(scale)
 
-            xi = np.zeros((T-1,K*K))
-
-            for i in range(T-1):
-
-                t = np.multiply(P,np.matmul(alpha[i,:].T,np.multiply(beta[i+1,:],B[i+1,:])))
-                xi[i,:] = t.flatten('F') / np.sum(t)
-
-            Scale = Scale + np.log(scale)
-
-            if Gamma == []:
+            if not Gamma:
 
                 Gamma = gamma
 
             else:
 
-                Gamma = np.vstack((Gamma,gamma))
+                Gamma = numpy.vstack((Gamma, gamma))
 
-            Gammasum = Gammasum + gammasum
-            Xi = Xi + xi
+            Gammasum += gammasum
+            Xi += xi
 
-        Mu = np.zeros((K,p))
-        Mu = np.matmul(Gamma.T,X)
+        Mu = numpy.zeros((K, p))
+        Mu = numpy.matmul(Gamma.T, X)
 
-        Mu = ZG_rdiv(Mu,Gammasum.T)
+        Mu = ZG_rdiv(Mu, Gammasum.T)
 
+        sxi = numpy.transpose(ZG_rsum(Xi.T))
+        sxi = numpy.reshape(sxi, (K, K)).T
 
-        sxi = np.transpose(ZG_rsum(Xi.T))
-        sxi = np.reshape(sxi,(K,K)).T
+        P = ZG_rdiv(sxi, ZG_rsum(sxi))
 
-        P = ZG_rdiv(sxi,ZG_rsum(sxi))
+        Pi = numpy.zeros((1, K))
 
-        Pi = np.zeros((1,K))
-
-        #can vectorize below
+        # can vectorize below
         for i in range(int(N)):
+            Pi = Pi + Gamma[(i - 1) * T + 1, :]
 
-            Pi = Pi + Gamma[(i-1)*T + 1,:]
-
-        Pi = Pi / N
+        Pi /= N
 
         Cov = 0
 
-
-
         for l in range(K):
+            d = X - Mu[l]
+            Cov += numpy.matmul(ZG_rprod(d, Gamma[:, l]).T, d)
 
-            d = X-Mu[l]
-            Cov = Cov + np.matmul(ZG_rprod(d,Gamma[:,l]).T,d)
-
-        Cov = Cov / np.sum(Gammasum)
+        Cov /= numpy.sum(Gammasum)
 
         oldlik = lik
-        lik = np.sum(Scale)
+        lik = numpy.sum(Scale)
         LL.append(lik)
-
 
         if cycle <= 1:
 
@@ -194,7 +187,7 @@ def ZG_hmm(X, T = '', K = 2, cyc = 100, tol = .0001):
 
             print("Error old lik better")
 
-        elif ((lik-likbase)<(1 + tol)*(oldlik-likbase)):
+        elif (lik - likbase) < (1 + tol) * (oldlik - likbase):
             break
 
     return Mu, Cov, P, Pi, LL

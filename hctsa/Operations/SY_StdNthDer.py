@@ -1,8 +1,8 @@
+import numpy
 
-import numpy as np
 
 def SY_StdNthDer(y, n=2):
-    '''
+    """
     SY_StdNthDer  Standard deviation of the nth derivative of the time series.
 
     Based on an idea by Vladimir Vassilevsky, a DSP and Mixed Signal Design
@@ -22,13 +22,13 @@ def SY_StdNthDer(y, n=2):
     :param y: time series to analyze
     :param n: the order of derivative to analyze
     :return: the standard deviation of the nth derivative of the time series
-    '''
+    """
 
-    yd = np.diff(y, n) # approximate way to calculate derivative
+    yd = numpy.diff(y, n)  # approximate way to calculate derivative
 
     if yd.size is 0:
         print("Time series too short to compute differences")
 
-    out = np.std(yd, ddof=1)
+    out = numpy.std(yd, ddof=1)
 
     return out

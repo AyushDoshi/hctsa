@@ -1,4 +1,14 @@
-def ST_LocalExtrema(y,lorf = 'l',n = ''):
+import math
+
+import numpy
+
+from hctsa.Operations import CO_FirstZero
+from hctsa.PeripheryFunctions import BF_makeBuffer
+
+
+def ST_LocalExtrema(y, lorf='l', n=''):
+    """
+    """
     if lorf == 'l' and n == '':
         n = 100
     elif n == '':
@@ -9,55 +19,42 @@ def ST_LocalExtrema(y,lorf = 'l',n = ''):
     if lorf == 'l':
         wl = n
     elif lorf == 'n':
-        wl = math.floor(N/n)
+        wl = math.floor(N / n)
     else:
-        wl = CO_FirstZero(y,'ac')
+        wl = CO_FirstZero(y)
 
     if wl > N or wl <= 1:
-        #print('window too short or long')
-        return np.nan
+        # print('window too short or long')
+        return numpy.nan
 
-    y_buffer = BF_makeBuffer(y,wl).transpose()
+    y_buffer = BF_makeBuffer(y, wl).transpose()
 
     numWindows = y_buffer.shape[1]
 
-    locmax = np.max(y_buffer,axis = 0)
+    locmax = numpy.max(y_buffer, axis=0)
 
-    locmin = np.min(y_buffer,axis = 0)
+    locmin = numpy.min(y_buffer, axis=0)
 
-    abslocmin = np.absolute(locmin)
+    abslocmin = numpy.absolute(locmin)
 
-    exti = np.where(abslocmin > locmax)
+    exti = numpy.where(abslocmin > locmax)
 
     locext = locmax
 
     locext[exti] = locmin[exti]
 
-    abslocext = np.absolute(locext)
+    abslocext = numpy.absolute(locext)
 
-    out = {}
+    out = {'meanrat': numpy.mean(locmax) / numpy.mean(abslocmin), 'medianrat': numpy.median(locmax) / numpy.median(abslocmin),
+           'minmax': numpy.min(locmax), 'minabsmin': numpy.min(abslocmin),
+           'minmaxonminabsmin': numpy.min(locmax) / numpy.min(abslocmin), 'meanmax': numpy.mean(locmax),
+           'meanabsmin': numpy.mean(abslocmin), 'meanext': numpy.mean(locext), 'medianmax': numpy.median(locmax),
+           'medianabsmin': numpy.median(abslocmin), 'medianext': numpy.median(locext), 'stdmax': numpy.std(locmax, ddof=1),
+           'stdmin': numpy.std(locmin, ddof=1), 'stdext': numpy.std(locext, ddof=1), 'meanabsext': numpy.mean(abslocext),
+           'medianabsext': numpy.median(abslocext), 'diffmaxabsmin': numpy.sum(numpy.absolute(locmax - abslocmin)) / numWindows,
+           'uord': numpy.sum(numpy.sign(locext)) / numWindows, 'maxmaxmed': numpy.max(locmax) / numpy.median(locmax),
+           'minminmed': numpy.min(locmin) / numpy.median(locmin), 'maxabsext': numpy.max(abslocext) / numpy.median(abslocext)}
 
-    out['meanrat'] = np.mean(locmax)/np.mean(abslocmin)
-    out['medianrat'] = np.median(locmax)/np.median(abslocmin)
-    out['minmax'] = np.min(locmax)
-    out['minabsmin'] = np.min(abslocmin)
-    out['minmaxonminabsmin'] = np.min(locmax)/np.min(abslocmin)
-    out['meanmax'] = np.mean(locmax)
-    out['meanabsmin'] = np.mean(abslocmin)
-    out['meanext'] = np.mean(locext)
-    out['medianmax'] = np.median(locmax)
-    out['medianabsmin'] = np.median(abslocmin)
-    out['medianext'] = np.median(locext)
-    out['stdmax'] = np.std(locmax,ddof=1)
-    out['stdmin'] = np.std(locmin,ddof=1)
-    out['stdext'] = np.std(locext,ddof=1)
-    #out.zcext = ST_SimpleStats(locext,'zcross');
-    out['meanabsext'] = np.mean(abslocext)
-    out['medianabsext'] = np.median(abslocext)
-    out['diffmaxabsmin'] = np.sum(np.absolute(locmax-abslocmin))/numWindows
-    out['uord'] = np.sum(np.sign(locext))/numWindows #% whether extreme events are more up or down
-    out['maxmaxmed'] = np.max(locmax)/np.median(locmax)
-    out['minminmed'] = np.min(locmin)/np.median(locmin)
-    out['maxabsext'] = np.max(abslocext)/np.median(abslocext)
+    # out.zcext = ST_SimpleStats(locext,'zcross');
 
     return out

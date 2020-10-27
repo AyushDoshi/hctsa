@@ -1,12 +1,15 @@
-#@numba.jit(nopython=True,parallel=True)
+# @numba.jit(nopython=True,parallel=True)
+import numpy
+
+
 def DN_Burstiness(y):
-
+    """
+    """
     if y.mean() == 0:
+        return numpy.nan
 
-        return np.nan
+    r = numpy.std(y) / y.mean()
 
-    r = np.std(y) / y.mean()
+    B = (r - 1) / (r + 1)
 
-    B = ( r - 1 ) / ( r + 1 )
-
-    return(B)
+    return B
