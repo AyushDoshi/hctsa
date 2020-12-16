@@ -14,8 +14,6 @@ def EN_SampEn(x, m=2, r=.2, scale=True):
     if scale:
         r = numpy.std(x, ddof=1) * r
 
-    print(r)
-
     templates = make_templates(x, m)
     # print(templates)
     A = 0

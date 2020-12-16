@@ -30,8 +30,10 @@ from hctsa.Operations.CO_AutoCorr import CO_AutoCorr
 from hctsa.Operations.CO_Embed2_Basic import CO_Embed2_Basic
 from hctsa.Operations.CO_FirstMin import CO_FirstMin
 from hctsa.Operations.CO_FirstZero import CO_FirstZero
+from hctsa.Operations.CO_NonlinearAuto import CO_NonlinearAutocorr
 from hctsa.Operations.CO_RM_AMInformation import CO_RM_AMInformation
 from hctsa.Operations.CO_f1ecac import CO_f1ecac
+from hctsa.Operations.CO_fzcgls import CO_fzcglscf
 from hctsa.Operations.CO_glscf import CO_glscf
 from hctsa.Operations.CO_tc3 import CO_tc3
 from hctsa.Operations.CO_trev import CO_trev
@@ -108,3 +110,5 @@ from hctsa.Operations.SY_StatAv import SY_StatAv
 from hctsa.Operations.SY_StdNthDer import SY_StdNthDer
 from hctsa.Operations.SY_Trend import SY_Trend
 from hctsa.Operations.dfa import dfa
+from hctsa.Operations.Moments import Moments
+from hctsa.Operations.SY_KPSS import SY_KPSS
